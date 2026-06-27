@@ -5,139 +5,108 @@
 #include <stdexcept>
 
 template <typename T> class ArraySequence : public Sequence<T> {
-protected:
+private:
   DynamicArray<T> data;
-
-  virtual ArraySequence<T> *clone() const = 0;
-  virtual ArraySequence<T> *createEmpty() const = 0;
 
 public:
   ArraySequence() : data() {}
   ArraySequence(int size) : data(size) {}
   ArraySequence(const T *source, int amount) : data(source, amount) {}
   ArraySequence(const ArraySequence &other) : data(other.data) {}
+
   ArraySequence &operator=(const ArraySequence &other) {
     data = other.data;
     return *this;
   }
 
+  void set(int index, const T &value) { data.set(index, value); }
+  const T &get(int index) const override { return data.get(index); }
+  int getSize() const override { return data.getSize(); }
+
   const T &getFirst() const override {
-    if (data.getSize() == 0)
-      throw std::out_of_range("ArraySequence::getFirst: empty");
-    return data.get(0);
+    if (getSize() == 0)
+      throw std::out_of_range("ArraySequence->getFirst: sequence empty");
+    return get(0);
   }
 
   const T &getLast() const override {
-    if (data.getSize() == 0)
-      throw std::out_of_range("ArraySequence::getLast: empty");
-    return data.get(data.getSize() - 1);
+    if (getSize() == 0)
+      throw std::out_of_range("ArraySequence->getLast: sequence is empty");
+    return get(getSize() - 1);
   }
 
-  const T &get(int index) const override { return data.get(index); }
-
-  int getLength() const override { return data.getSize(); }
-
-  Sequence<T> *append(const T &value) override {
-    ArraySequence<T> *result = clone();
-    int newSize = result->data.getSize() + 1;
-    result->data.resize(newSize);
-    result->data.set(newSize - 1, value);
-    return result;
+  void append(const T &value) override {
+    int oldSize = getSize();
+    data.resize(oldSize + 1);
+    set(oldSize, value);
+    return;
   }
 
-  Sequence<T> *prepend(const T &value) override {
-    ArraySequence<T> *result = clone();
-    int oldSize = result->data.getSize();
-    result->data.resize(oldSize + 1);
+  void prepend(const T &value) override {
+    int oldSize = getSize();
+    data.resize(oldSize + 1);
     for (int i = oldSize; i > 0; --i) {
-      result->data.set(i, result->data.get(i - 1));
+      set(i, get(i - 1));
     }
-    result->data.set(0, value);
-    return result;
+    set(0, value);
+    return;
   }
 
-  Sequence<T> *insertAt(const T &value, int index) override {
-    if (index < 0 || index > data.getSize())
-      throw std::out_of_range("ArraySequence::insertAt: index out of range");
-    if (index == 0)
-      return prepend(value);
-    if (index == data.getSize())
-      return append(value);
-
-    ArraySequence<T> *result = clone();
-    int oldSize = result->data.getSize();
-    result->data.resize(oldSize + 1);
-    for (int i = oldSize; i > index; --i) {
-      result->data.set(i, result->data.get(i - 1));
+  void insertAt(const T &value, int index) override {
+    int oldSize = getSize();
+    if (index < 0 || index > oldSize)
+      throw std::out_of_range("ArraySequence->insertAt: index out of range");
+    if (index == 0) {
+      prepend(value);
+    } else if (index == oldSize) {
+      append(value);
+    } else {
+      data.resize(oldSize + 1);
+      for (int i = oldSize; i > index; --i) {
+        set(i, get(i - 1));
+      }
+      result->set(index, value);
     }
-    result->data.set(index, value);
-    return result;
+    return;
   }
 
-  Sequence<T> *remove(int index) override {
-    if (index < 0 || index >= data.getSize())
-      throw std::out_of_range("ArraySequence::remove: index out of range");
-
-    ArraySequence<T> *result = clone();
-    int oldSize = result->data.getSize();
-    for (int i = index; i < oldSize - 1; ++i) {
-      result->data.set(i, result->data.get(i + 1));
+  void removeAt(int index) override {
+    int oldSize = getSize();
+    if (index < 0 || index >= oldSize)
+      throw std::out_of_range("ArraySequence->remove: index out of range");
+    if (index != oldSize - 1) {
+      for (int i = index; i < oldSize - 1; ++i) {
+        set(i, get(i + 1));
+      }
     }
-    result->data.resize(oldSize - 1);
-    return result;
+    data.resize(oldSize - 1);
+    return;
   }
 
   Sequence<T> *getSubsequence(int start, int end) const override {
-    if (start < 0 || end >= data.getSize() || start > end)
-      throw std::out_of_range("ArraySequence::getSubsequence: invalid indices");
-    int size = end - start + 1;
-    ArraySequence<T> *result = createEmpty();
-    result->data.resize(size);
-    for (int i = 0; i < size; ++i) {
-      result->data.set(i, data.get(start + i));
+    if (start < 0 || end >= getSize() || start > end)
+      throw std::out_of_range("ArraySequence->getSubsequence: invalid indices");
+    int newSize = end - start + 1;
+    auto *result = new ArraySequence<T>(newSize);
+    for (int i = 0; i < newSize; ++i) {
+      result->set(i, get(start + i));
     }
     return result;
   }
 
   Sequence<T> *concat(const Sequence<T> &other) const override {
-    int thisSize = data.getSize();
-    int otherSize = other.getLength();
-    ArraySequence<T> *result = createEmpty();
-    result->data.resize(thisSize + otherSize);
+    int thisSize = getSize();
+    int otherSize = other.getSize();
+    auto *result = new ArraySequence<T>(thisSize + otherSize);
+
     for (int i = 0; i < thisSize; ++i) {
-      result->data.set(i, data.get(i));
+      result->set(i, get(i));
     }
     for (int i = 0; i < otherSize; ++i) {
-      result->data.set(thisSize + i, other.get(i));
+      result->set(thisSize + i, other.get(i));
     }
     return result;
   }
 
-  virtual ~ArraySequence() override {}
-};
-
-template <typename T> class MutableArraySequence : public ArraySequence<T> {
-protected:
-  ArraySequence<T> *clone() const override {
-    return const_cast<MutableArraySequence<T> *>(this);
-  }
-  ArraySequence<T> *createEmpty() const override {
-    return new MutableArraySequence<T>();
-  }
-
-public:
-  using ArraySequence<T>::ArraySequence;
-};
-
-template <typename T> class ImmutableArraySequence : public ArraySequence<T> {
-protected:
-  ArraySequence<T> *clone() const override {
-    return new ImmutableArraySequence<T>(*this);
-  }
-  ArraySequence<T> *createEmpty() const override {
-    return new ImmutableArraySequence<T>();
-  }
-
-public:
-  using ArraySequence<T>::ArraySequence;
+  ~ArraySequence() {}
 };

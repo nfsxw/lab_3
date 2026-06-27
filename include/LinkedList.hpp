@@ -1,7 +1,7 @@
 #pragma once
 
-#include <algorithm>
 #include <stdexcept>
+#include <utility>
 
 template <typename T> class LinkedList {
 private:
@@ -11,15 +11,15 @@ private:
     Node(const T &value) : data(value), next(nullptr) {}
   };
   Node *head, *tail;
-  int length;
+  int size;
 
 public:
-  LinkedList() : head(nullptr), tail(nullptr), length(0) {}
+  LinkedList() : head(nullptr), tail(nullptr), size(0) {}
 
   LinkedList(const T *source, int amount)
-      : head(nullptr), tail(nullptr), length(0) {
+      : head(nullptr), tail(nullptr), size(0) {
     if (amount < 0)
-      throw std::invalid_argument("LinkedList: count cannot be negative");
+      throw std::invalid_argument("LinkedList: amount cannot be negative");
     if (amount > 0 && source == nullptr)
       throw std::invalid_argument("LinkedList: null pointer received");
     for (int i = 0; i < amount; ++i) {
@@ -27,8 +27,7 @@ public:
     }
   }
 
-  LinkedList(const LinkedList &other)
-      : head(nullptr), tail(nullptr), length(0) {
+  LinkedList(const LinkedList &other) : head(nullptr), tail(nullptr), size(0) {
     Node *current = other.head;
     while (current != nullptr) {
       append(current->data);
@@ -41,34 +40,34 @@ public:
       LinkedList temp(other);
       std::swap(head, temp.head);
       std::swap(tail, temp.tail);
-      std::swap(length, temp.length);
+      std::swap(size, temp.size);
     }
     return *this;
   }
 
   ~LinkedList() {
-    Node *current = head;
-    while (current != nullptr) {
-      Node *next = current->next;
-      delete current;
-      current = next;
+    Node *temp = nullptr;
+    while (head != nullptr) {
+      temp = head;
+      head = head->next;
+      delete temp;
     }
   }
 
   const T &getFirst() const {
-    if (length == 0)
+    if (size == 0)
       throw std::out_of_range("LinkedList->getFirst: list is empty");
     return head->data;
   }
 
   const T &getLast() const {
-    if (length == 0)
+    if (size == 0)
       throw std::out_of_range("LinkedList->getLast: list is empty");
     return tail->data;
   }
 
   const T &get(int index) const {
-    if (index < 0 || index >= length)
+    if (index < 0 || index >= size)
       throw std::out_of_range("LinkedList->get: index out of range");
     Node *current = head;
     for (int i = 0; i < index; ++i) {
@@ -77,57 +76,54 @@ public:
     return current->data;
   }
 
-  int getLength() const { return length; }
+  int getSize() const { return size; }
 
   void append(const T &value) {
     Node *newNode = new Node(value);
-    if (length == 0) {
+    if (size == 0) {
       head = tail = newNode;
     } else {
       tail->next = newNode;
       tail = newNode;
     }
-    ++length;
+    ++size;
   }
 
   void prepend(const T &value) {
     Node *newNode = new Node(value);
-    if (length == 0) {
+    if (size == 0) {
       head = tail = newNode;
     } else {
       newNode->next = head;
       head = newNode;
     }
-    ++length;
+    ++size;
   }
 
   void insertAt(const T &value, int index) {
-    if (index < 0 || index > length)
+    if (index < 0 || index > size) {
       throw std::out_of_range("LinkedList->insertAt: index out of range");
-
-    if (index == 0) {
+    } else if (index == 0) {
       prepend(value);
-      return;
-    }
-    if (index == length) {
+    } else if (index == size) {
       append(value);
-      return;
+    } else {
+      Node *prev = head;
+      for (int i = 0; i < index - 1; ++i) {
+        prev = prev->next;
+      }
+      Node *newNode = new Node(value);
+      newNode->next = prev->next;
+      prev->next = newNode;
+      ++size;
     }
-
-    Node *prev = head;
-    for (int i = 0; i < index - 1; ++i) {
-      prev = prev->next;
-    }
-    Node *newNode = new Node(value);
-    newNode->next = prev->next;
-    prev->next = newNode;
-    ++length;
+    return;
   }
 
   void removeAt(int index) {
-    if (index < 0 || index >= length)
+    if (index < 0 || index >= size)
       throw std::out_of_range("LinkedList->remove: index out of range");
-    if (length == 1) {
+    if (size == 1) {
       delete head;
       head = tail = nullptr;
     } else if (index == 0) {
@@ -141,16 +137,16 @@ public:
       }
       Node *temp = prev->next;
       prev->next = temp->next;
-      if (index == length - 1) {
+      if (index == size - 1) {
         tail = prev;
       }
       delete temp;
     }
-    --length;
+    --size;
   }
 
   LinkedList<T> getSublist(int start, int end) const {
-    if (start < 0 || end >= length || start > end)
+    if (start < 0 || end >= size || start > end)
       throw std::out_of_range(
           "LinkedList->getSublist: invalid start/end indices");
     LinkedList<T> result;
@@ -166,13 +162,8 @@ public:
   }
 
   LinkedList<T> concat(const LinkedList<T> &other) const {
-    LinkedList<T> result;
-    Node *current = head;
-    while (current != nullptr) {
-      result.append(current->data);
-      current = current->next;
-    }
-    current = other.head;
+    LinkedList<T> result(other);
+    Node *current = other.head;
     while (current != nullptr) {
       result.append(current->data);
       current = current->next;

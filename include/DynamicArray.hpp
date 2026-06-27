@@ -1,7 +1,7 @@
 #pragma once
 
-#include <algorithm>
 #include <stdexcept>
+#include <utility>
 
 template <typename T> class DynamicArray {
 private:
@@ -10,7 +10,6 @@ private:
 
 public:
   DynamicArray() : data(nullptr), size(0) {}
-
   DynamicArray(int size) : data(nullptr), size(0) {
     if (size < 0)
       throw std::invalid_argument("DynamicArray: size cannot be negative");

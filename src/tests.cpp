@@ -9,6 +9,7 @@
 #include "LinkedList.hpp"
 #include "ListSequence.hpp"
 #include "Vector.hpp"
+#include "QuickSort.hpp"
 
 int testsPassed = 0;
 int testsFailed = 0;
@@ -1202,25 +1203,104 @@ void testCountInversions() {
   assertEqual(countInversions(sseq), 1, "countInversions: [b,a,c]");
 }
 
-void testAllCombinations() {
-  int arr[] = {1, 2};
-  MutableArraySequence<int> seq(arr, 2);
+void testAllCombinationsEmpty() {
+  MutableArraySequence<int> seq;
   auto result = allCombinations(seq);
-  assertEqual(result->getLength(), 4, "allCombinations: amount");
+  assertEqual(result->getLength(), 1, "allCombinations: empty - total");
+  assertEqual(result->get(0).getLength(), 0,
+              "allCombinations: empty - only empty");
+  delete result;
+}
 
-  int len = 0, countLen0 = 0, countLen1 = 0, countLen2 = 0;
+void testAllCombinationsOne() {
+  int arr[] = {5};
+  MutableArraySequence<int> seq(arr, 1);
+  auto result = allCombinations(seq);
+  assertEqual(result->getLength(), 2, "allCombinations: [5] total");
+  int len0 = 0, len1 = 0;
   for (int i = 0; i < result->getLength(); ++i) {
-    len = result->get(i).getLength();
+    int len = result->get(i).getLength();
     if (len == 0)
-      ++countLen0;
+      len0++;
     else if (len == 1)
-      ++countLen1;
-    else if (len == 2)
-      ++countLen2;
+      len1++;
   }
-  assertEqual(countLen0, 1, "allSubsequences: empty subset");
-  assertEqual(countLen1, 2, "allCombinations: subset of length 1");
-  assertEqual(countLen2, 1, "allCombinations: subset of length 2");
+  assertEqual(len0, 1, "allCombinations: [5] len0 count");
+  assertEqual(len1, 1, "allCombinations: [5] len1 count");
+  delete result;
+}
+
+void testAllCombinationsUnique() {
+  int arr[] = {1, 2, 3};
+  MutableArraySequence<int> seq(arr, 3);
+  auto result = allCombinations(seq);
+  assertEqual(result->getLength(), 8, "allCombinations: [1,2,3] total");
+  int len0 = 0, len1 = 0, len2 = 0, len3 = 0;
+  for (int i = 0; i < result->getLength(); ++i) {
+    int len = result->get(i).getLength();
+    if (len == 0)
+      len0++;
+    else if (len == 1)
+      len1++;
+    else if (len == 2)
+      len2++;
+    else if (len == 3)
+      len3++;
+  }
+  assertEqual(len0, 1, "allCombinations: [1,2,3] len0");
+  assertEqual(len1, 3, "allCombinations: [1,2,3] len1");
+  assertEqual(len2, 3, "allCombinations: [1,2,3] len2");
+  assertEqual(len3, 1, "allCombinations: [1,2,3] len3");
+  delete result;
+}
+
+void testAllCombinationsWithDups() {
+  int arr[] = {1, 2, 2};
+  MutableArraySequence<int> seq(arr, 3);
+  auto result = allCombinations(seq);
+  // Уникальные по значению: [], [1], [2], [1,2], [2,2], [1,2,2] → всего 6
+  assertEqual(result->getLength(), 6, "allCombinations: [1,2,2] total");
+  int len0 = 0, len1 = 0, len2 = 0, len3 = 0;
+  for (int i = 0; i < result->getLength(); ++i) {
+    int len = result->get(i).getLength();
+    if (len == 0)
+      len0++;
+    else if (len == 1)
+      len1++;
+    else if (len == 2)
+      len2++;
+    else if (len == 3)
+      len3++;
+  }
+  assertEqual(len0, 1, "allCombinations: [1,2,2] len0");
+  assertEqual(len1, 2, "allCombinations: [1,2,2] len1");
+  assertEqual(len2, 2, "allCombinations: [1,2,2] len2");
+  assertEqual(len3, 1, "allCombinations: [1,2,2] len3");
+  delete result;
+}
+
+void testAllCombinationsAllSame() {
+  int arr[] = {2, 2, 2};
+  MutableArraySequence<int> seq(arr, 3);
+  auto result = allCombinations(seq);
+  // Уникальные: [], [2], [2,2], [2,2,2] → всего 4
+  assertEqual(result->getLength(), 4, "allCombinations: [2,2,2] total");
+  int len0 = 0, len1 = 0, len2 = 0, len3 = 0;
+  for (int i = 0; i < result->getLength(); ++i) {
+    int len = result->get(i).getLength();
+    if (len == 0)
+      len0++;
+    else if (len == 1)
+      len1++;
+    else if (len == 2)
+      len2++;
+    else if (len == 3)
+      len3++;
+  }
+  assertEqual(len0, 1, "allCombinations: [2,2,2] len0");
+  assertEqual(len1, 1, "allCombinations: [2,2,2] len1");
+  assertEqual(len2, 1, "allCombinations: [2,2,2] len2");
+  assertEqual(len3, 1, "allCombinations: [2,2,2] len3");
   delete result;
 }
 
@@ -1325,7 +1405,11 @@ void runAllTests() {
   {
     using namespace ExtraTasksTests;
     testCountInversions();
-    testAllCombinations();
+    testAllCombinationsEmpty();
+    testAllCombinationsOne();
+    testAllCombinationsUnique();
+    testAllCombinationsWithDups();
+    testAllCombinationsAllSame();
     testAllSubsequences();
   }
 

@@ -7,10 +7,6 @@
 template <typename T> class ListSequence : public Sequence<T> {
 protected:
   LinkedList<T> data;
-
-  virtual ListSequence<T> *clone() const = 0;
-  virtual ListSequence<T> *createEmpty() const = 0;
-
 public:
   ListSequence() : data() {}
   ListSequence(const T *source, int amount) : data(source, amount) {}
@@ -22,75 +18,39 @@ public:
 
   const T &get(int index) const override { return data.get(index); }
 
-  int getLength() const override { return data.getLength(); }
+  int getSize() const override { return data.getSize(); }
 
-  Sequence<T> *append(const T &value) override {
-    ListSequence<T> *result = clone();
-    result->data.append(value);
-    return result;
+  void append(const T &value) override {
+    data.aappend(value);
   }
 
-  Sequence<T> *prepend(const T &value) override {
-    ListSequence<T> *result = clone();
-    result->data.prepend(value);
-    return result;
+  void prepend(const T &value) override {
+    data.prepend(value);
   }
 
-  Sequence<T> *insertAt(const T &value, int index) override {
-    ListSequence<T> *result = clone();
-    result->data.insertAt(value, index);
-    return result;
+  void insertAt(const T &value, int index) override {
+    data.insertAt(value, index);
   }
 
-  Sequence<T> *remove(int index) override {
-    ListSequence<T> *result = clone();
-    result->data.removeAt(index);
-    return result;
+  void removeAt(int index) override {
+    data.removeAt(index);
   }
 
   Sequence<T> *getSubsequence(int start, int end) const override {
-    LinkedList<T> sublist = data.getSublist(start, end);
-    ListSequence<T> *result = createEmpty();
-    result->data = sublist;
+    auto *result = new ListSequence<T>();
+    result->data = data.getSublist(start, end);
     return result;
   }
 
   Sequence<T> *concat(const Sequence<T> &other) const override {
-    ListSequence<T> *result = createEmpty();
-    for (int i = 0; i < data.getLength(); ++i) {
-      result->data.append(data.get(i));
+    LinkedList<T> temp;
+    for(int i = 0; i < other.getSize(); ++i) {
+      temp.append(other.get(i));
     }
-    for (int i = 0; i < other.getLength(); ++i) {
-      result->data.append(other.get(i));
-    }
+    auto *result = new ListSequence<T>();
+    result->data = data.concat(temp);
     return result;
   }
 
   virtual ~ListSequence() override {}
-};
-
-template <typename T> class MutableListSequence : public ListSequence<T> {
-protected:
-  ListSequence<T> *clone() const override {
-    return const_cast<MutableListSequence<T> *>(this);
-  }
-  ListSequence<T> *createEmpty() const override {
-    return new MutableListSequence<T>();
-  }
-
-public:
-  using ListSequence<T>::ListSequence;
-};
-
-template <typename T> class ImmutableListSequence : public ListSequence<T> {
-protected:
-  ListSequence<T> *clone() const override {
-    return new ImmutableListSequence<T>(*this);
-  }
-  ListSequence<T> *createEmpty() const override {
-    return new ImmutableListSequence<T>();
-  }
-
-public:
-  using ListSequence<T>::ListSequence;
 };

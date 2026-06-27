@@ -7,24 +7,35 @@
 
 template <typename T> class Vector {
 private:
-  MutableArraySequence<T> data;
+  ArraySequence<T> data;
 
 public:
   Vector() : data() {};
   Vector(int size) : data(size) {}
   Vector(const T *source, int amount) : data(source, amount) {}
   Vector(const Sequence<T> &other) {
-    for (int i = 0; i < other.getLength(); ++i)
-      data.append(other.get(i));
+    for (int i = 0; i < other.getSize(); ++i) {
+      append(other.get(i));
+    }
   }
 
-  int getSize() const { return data.getLength(); }
+  int getSize() const { return data.getSize(); }
 
   T get(int index) const { return data.get(index); }
 
-  void set(const T &value, int index) {
-    data.remove(index);
-    data.insertAt(value, index);
+  void set(int index, const T &value) {
+    data.set(index, value);
+    return;
+  }
+
+  void append(const T &value) {
+    data.append(value);
+    return;
+  }
+
+  void prepend(const T &value) {
+    data.prepend(value);
+    return;
   }
 
   Vector<T> add(const Vector<T> &other) const {
@@ -32,7 +43,7 @@ public:
       throw std::invalid_argument("Vector sizes differ");
     Vector<T> result;
     for (int i = 0; i < getSize(); ++i)
-      result.data.append(get(i) + other.get(i));
+      result.append(i, get(i) + other.get(i));
     return result;
   }
 
@@ -48,14 +59,14 @@ public:
   Vector<T> scalarMul(const T &scalar) const {
     Vector<T> result;
     for (int i = 0; i < getSize(); ++i)
-      result.data.append(data.get(i) * scalar);
+      result.append(data.get(i) * scalar);
     return result;
   }
 
   double norm() const {
     double sum = 0.0;
     for (int i = 0; i < getSize(); ++i) {
-      double val = std::abs(data.get(i));
+      double val = std::abs(get(i));
       sum += val * val;
     }
     return std::sqrt(sum);

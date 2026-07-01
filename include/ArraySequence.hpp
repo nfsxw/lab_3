@@ -19,7 +19,7 @@ public:
     return *this;
   }
 
-  void set(int index, const T &value) { data.set(index, value); }
+  void set(const T &value, int index) { data.set(value, index); }
   const T &get(int index) const override { return data.get(index); }
   int getSize() const override { return data.getSize(); }
 
@@ -38,7 +38,7 @@ public:
   void append(const T &value) override {
     int oldSize = getSize();
     data.resize(oldSize + 1);
-    set(oldSize, value);
+    set(value, oldSize);
     return;
   }
 
@@ -46,9 +46,9 @@ public:
     int oldSize = getSize();
     data.resize(oldSize + 1);
     for (int i = oldSize; i > 0; --i) {
-      set(i, get(i - 1));
+      set(get(i - 1), i);
     }
-    set(0, value);
+    set(value, 0);
     return;
   }
 
@@ -63,9 +63,9 @@ public:
     } else {
       data.resize(oldSize + 1);
       for (int i = oldSize; i > index; --i) {
-        set(i, get(i - 1));
+        set(get(i - 1), i);
       }
-      result->set(index, value);
+      set(value, index);
     }
     return;
   }
@@ -76,7 +76,7 @@ public:
       throw std::out_of_range("ArraySequence->remove: index out of range");
     if (index != oldSize - 1) {
       for (int i = index; i < oldSize - 1; ++i) {
-        set(i, get(i + 1));
+        set(get(i + 1), i);
       }
     }
     data.resize(oldSize - 1);
@@ -89,7 +89,7 @@ public:
     int newSize = end - start + 1;
     auto *result = new ArraySequence<T>(newSize);
     for (int i = 0; i < newSize; ++i) {
-      result->set(i, get(start + i));
+      result->set(get(start + i), i);
     }
     return result;
   }
@@ -100,10 +100,10 @@ public:
     auto *result = new ArraySequence<T>(thisSize + otherSize);
 
     for (int i = 0; i < thisSize; ++i) {
-      result->set(i, get(i));
+      result->set(get(i), i);
     }
     for (int i = 0; i < otherSize; ++i) {
-      result->set(thisSize + i, other.get(i));
+      result->set(other.get(i), thisSize + i);
     }
     return result;
   }

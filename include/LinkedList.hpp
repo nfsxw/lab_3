@@ -162,7 +162,7 @@ public:
   }
 
   LinkedList<T> concat(const LinkedList<T> &other) const {
-    LinkedList<T> result(other);
+    LinkedList<T> result(*this);
     Node *current = other.head;
     while (current != nullptr) {
       result.append(current->data);

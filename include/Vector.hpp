@@ -15,7 +15,7 @@ public:
   Vector(const T *source, int amount) : data(source, amount) {}
   Vector(const Sequence<T> &other) {
     for (int i = 0; i < other.getSize(); ++i) {
-      append(other.get(i));
+      data.append(other.get(i));
     }
   }
 
@@ -23,27 +23,17 @@ public:
 
   T get(int index) const { return data.get(index); }
 
-  void set(int index, const T &value) {
-    data.set(index, value);
-    return;
-  }
-
-  void append(const T &value) {
-    data.append(value);
-    return;
-  }
-
-  void prepend(const T &value) {
-    data.prepend(value);
+  void set(const T &value, int index) {
+    data.set(value, index);
     return;
   }
 
   Vector<T> add(const Vector<T> &other) const {
     if (getSize() != other.getSize())
       throw std::invalid_argument("Vector sizes differ");
-    Vector<T> result;
+    Vector<T> result(getSize());
     for (int i = 0; i < getSize(); ++i)
-      result.append(i, get(i) + other.get(i));
+      result.set(get(i) + other.get(i), i);
     return result;
   }
 
@@ -57,9 +47,9 @@ public:
   }
 
   Vector<T> scalarMul(const T &scalar) const {
-    Vector<T> result;
+    Vector<T> result(getSize());
     for (int i = 0; i < getSize(); ++i)
-      result.append(data.get(i) * scalar);
+      result.set(data.get(i) * scalar, i);
     return result;
   }
 

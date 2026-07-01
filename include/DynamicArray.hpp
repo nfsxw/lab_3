@@ -55,7 +55,7 @@ public:
     return data[index];
   }
 
-  void set(int index, const T &value) {
+  void set(const T &value, int index) {
     if (index < 0 || index >= size)
       throw std::out_of_range("DynamicArray->set: index out of range");
     data[index] = value;

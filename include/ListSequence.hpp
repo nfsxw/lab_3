@@ -7,10 +7,16 @@
 template <typename T> class ListSequence : public Sequence<T> {
 protected:
   LinkedList<T> data;
+
 public:
   ListSequence() : data() {}
   ListSequence(const T *source, int amount) : data(source, amount) {}
   ListSequence(const ListSequence &other) : data(other.data) {}
+
+  ListSequence &operator=(const ListSequence &other) {
+    data = other.data;
+    return *this;
+  }
 
   const T &getFirst() const override { return data.getFirst(); }
 
@@ -20,21 +26,15 @@ public:
 
   int getSize() const override { return data.getSize(); }
 
-  void append(const T &value) override {
-    data.aappend(value);
-  }
+  void append(const T &value) override { data.append(value); }
 
-  void prepend(const T &value) override {
-    data.prepend(value);
-  }
+  void prepend(const T &value) override { data.prepend(value); }
 
   void insertAt(const T &value, int index) override {
     data.insertAt(value, index);
   }
 
-  void removeAt(int index) override {
-    data.removeAt(index);
-  }
+  void removeAt(int index) override { data.removeAt(index); }
 
   Sequence<T> *getSubsequence(int start, int end) const override {
     auto *result = new ListSequence<T>();
@@ -44,7 +44,7 @@ public:
 
   Sequence<T> *concat(const Sequence<T> &other) const override {
     LinkedList<T> temp;
-    for(int i = 0; i < other.getSize(); ++i) {
+    for (int i = 0; i < other.getSize(); ++i) {
       temp.append(other.get(i));
     }
     auto *result = new ListSequence<T>();

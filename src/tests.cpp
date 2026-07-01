@@ -8,6 +8,7 @@
 #include "LinkedList.hpp"
 #include "ListSequence.hpp"
 #include "Vector.hpp"
+#include "Permutations.hpp"
 
 int testsPassed = 0;
 int testsFailed = 0;
@@ -385,6 +386,47 @@ void testGetFirstLast() {
   } catch (const std::out_of_range &) {
     printTestResult("GetLast on empty list throws exception", true);
     ++testsPassed;
+  }
+}
+
+void testSet() {
+  int source[] = {1, 2, 3};
+  LinkedList<int> list(source, 3);
+
+  list.set(67, 0);
+  assertEqual(list.getFirst(), 67, "LinkedList set: first element");
+
+  list.set(42, 1);
+  assertEqual(list.get(1), 42, "LinkedList set: middle element");
+
+  list.set(52, 2);
+  assertEqual(list.getLast(), 52, "LinkedList set: last element");
+
+  // Out of range
+  try {
+    list.set(555, 10);
+    printTestResult("LinkedList set out of range did not throw", false);
+    ++testsFailed;
+  } catch (const std::out_of_range &) {
+    printTestResult("LinkedList set out of range throws exception", true);
+    ++testsPassed;
+  } catch (...) {
+    printTestResult("LinkedList set out of range threw wrong exception", false);
+    ++testsFailed;
+  }
+
+  // Negative index
+  try {
+    list.set(555, -5);
+    printTestResult("LinkedList set negative index did not throw", false);
+    ++testsFailed;
+  } catch (const std::out_of_range &) {
+    printTestResult("LinkedList set negative index throws exception", true);
+    ++testsPassed;
+  } catch (...) {
+    printTestResult("LinkedList set negative index threw wrong exception",
+                    false);
+    ++testsFailed;
   }
 }
 
@@ -912,6 +954,20 @@ void testGetFirstLast() {
   }
 }
 
+void testSet() {
+  int arr[] = {1, 2, 3};
+  ListSequence<int> seq(arr, 3);
+
+  seq.set(67, 0);
+  assertEqual(seq.getFirst(), 67, "ListSequence set: first element");
+
+  seq.set(42, 1);
+  assertEqual(seq.get(1), 42, "ListSequence set: element at index 1 after set");
+
+  seq.set(69, 2);
+  assertEqual(seq.getLast(), 69, "ListSequence set: last element");
+}
+
 void testGetSubsequence() {
   int arr[] = {1, 2, 3, 4, 5};
   ListSequence<int> seq(arr, 5);
@@ -1040,6 +1096,113 @@ void testNorm() {
 }
 } // namespace VectorTests
 
+namespace PermutationTests {
+void testPreservesElements() {
+  int arr[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+  ArraySequence<int> seq(arr, 16);
+
+  int original[16];
+  for (int i = 0; i < 16; ++i) {
+    original[i] = seq.get(i);
+  }
+
+  almostUniformPermutation(&seq, 4);
+
+  assertEqual(seq.getSize(), 16, "Permutation: size unchanged");
+
+  bool allPresent = true;
+  for (int i = 0; i < 16; ++i) {
+    bool found = false;
+    for (int j = 0; j < 16; ++j) {
+      if (seq.get(j) == original[i]) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      allPresent = false;
+      break;
+    }
+  }
+  printTestResult("Permutation: all elements preserved", allPresent);
+  if (allPresent)
+    ++testsPassed;
+  else
+    ++testsFailed;
+}
+
+void testChangesOrder() {
+  int arr[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+  ArraySequence<int> seq(arr, 16);
+
+  int original[16];
+  for (int i = 0; i < 16; ++i) {
+    original[i] = seq.get(i);
+  }
+
+  almostUniformPermutation(&seq, 4);
+
+  bool orderChanged = false;
+  for (int i = 0; i < 16; ++i) {
+    if (seq.get(i) != original[i]) {
+      orderChanged = true;
+      break;
+    }
+  }
+  printTestResult("Permutation: order changed", orderChanged);
+  if (orderChanged)
+    ++testsPassed;
+  else
+    ++testsFailed;
+}
+
+void testEmptyAndSingle() {
+  ArraySequence<int> empty;
+  almostUniformPermutation(&empty, 4);
+  assertEqual(empty.getSize(), 0, "Permutation on empty sequence");
+
+  int arr[] = {42};
+  ArraySequence<int> single(arr, 1);
+  almostUniformPermutation(&single, 4);
+  assertEqual(single.getSize(), 1, "Permutation on single element: size");
+  assertEqual(single.get(0), 42, "Permutation on single element: value");
+}
+
+void testOnListSequence() {
+  int arr[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+  ListSequence<int> seq(arr, 16);
+
+  int original[16];
+  for (int i = 0; i < 16; ++i) {
+    original[i] = seq.get(i);
+  }
+
+  almostUniformPermutation(&seq, 4);
+
+  assertEqual(seq.getSize(), 16, "ListSequence permutation: size unchanged");
+
+  bool allPresent = true;
+  for (int i = 0; i < 16; ++i) {
+    bool found = false;
+    for (int j = 0; j < 16; ++j) {
+      if (seq.get(j) == original[i]) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      allPresent = false;
+      break;
+    }
+  }
+  printTestResult("ListSequence permutation: elements preserved", allPresent);
+  if (allPresent)
+    ++testsPassed;
+  else
+    ++testsFailed;
+}
+} // namespace PermutationTests
+
 void runAllTests() {
   std::cout << "\n========================================= TESTS "
                "============================================"
@@ -1067,6 +1230,7 @@ void runAllTests() {
     testCopyConstructor();
     testAssignmentOperator();
     testGetFirstLast();
+    testSet();
     testAppendPrepend();
     testInsertAt();
     testRemoveAt();
@@ -1097,6 +1261,7 @@ void runAllTests() {
     testAssignmentOperator();
     testAppendPrependInsertRemove();
     testGetFirstLast();
+    testSet();
     testGetSubsequence();
     testConcat();
   }
@@ -1110,6 +1275,15 @@ void runAllTests() {
     testDotProduct();
     testScalarMul();
     testNorm();
+  }
+
+  std::cout << "\nPermutations:\n" << std::endl;
+  {
+    using namespace PermutationTests;
+    testPreservesElements();
+    testChangesOrder();
+    testEmptyAndSingle();
+    testOnListSequence();
   }
 
   std::cout << "\n========================================= RESULTS "

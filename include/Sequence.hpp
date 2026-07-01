@@ -9,6 +9,7 @@ public:
   virtual const T &get(int index) const = 0;
   virtual int getSize() const = 0;
 
+  virtual void set(const T &value, int index) = 0;
   virtual void append(const T &value) = 0;
   virtual void prepend(const T &value) = 0;
   virtual void insertAt(const T &value, int index) = 0;

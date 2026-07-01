@@ -19,7 +19,7 @@ public:
     return *this;
   }
 
-  void set(const T &value, int index) { data.set(value, index); }
+  void set(const T &value, int index) override { data.set(value, index); }
   const T &get(int index) const override { return data.get(index); }
   int getSize() const override { return data.getSize(); }
 

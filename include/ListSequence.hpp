@@ -24,6 +24,8 @@ public:
 
   const T &get(int index) const override { return data.get(index); }
 
+  void set(const T &value, int index) override { data.set(value, index); }
+
   int getSize() const override { return data.getSize(); }
 
   void append(const T &value) override { data.append(value); }

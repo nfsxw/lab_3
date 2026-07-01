@@ -78,6 +78,16 @@ public:
 
   int getSize() const { return size; }
 
+  void set(const T &value, int index) {
+    if (index < 0 || index >= size)
+      throw std::out_of_range("LinkedList->set: index out of range");
+    Node *current = head;
+    for (int i = 0; i < index; ++i) {
+      current = current->next;
+    }
+    current->data = value;
+  }
+
   void append(const T &value) {
     Node *newNode = new Node(value);
     if (size == 0) {

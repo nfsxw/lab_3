@@ -110,7 +110,7 @@ void sequenceMenu() {
         int start = readInt("Start: ");
         int end = readInt("End: ");
         Sequence<int> *sub = seq->getSubsequence(start, end);
-        std::cout << "Subsequence: ";
+        F std::cout << "Subsequence: ";
         printSequence(sub);
         delete sub;
       } else if (choice == 9) {
@@ -122,7 +122,7 @@ void sequenceMenu() {
 
         int otherSize = readInt("Enter size of the second sequence: ");
         if (otherSize < 0)
-          otherSize = 0; 
+          otherSize = 0;
 
         std::cout << "Enter " << otherSize << " elements:\n";
         for (int i = 0; i < otherSize; ++i) {
@@ -136,7 +136,7 @@ void sequenceMenu() {
         seq = result;
         std::cout << "Result: ";
         printSequence(seq);
-        
+
       } else if (choice == 10) {
         int k = readInt("Number of segments (0 for default=4): ");
         if (k <= 0)
